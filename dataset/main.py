@@ -3,6 +3,8 @@ import cv2
 from pytube import YouTube
 from config import URLS
 
+count = 0
+
 def download_video(url, filename):
     yt = YouTube(url)
     yt.streams.first().download(filename=filename)
@@ -10,9 +12,10 @@ def download_video(url, filename):
 def save_frames(filename, output_folder):
     vidcap = cv2.VideoCapture(filename)
     success, image = vidcap.read()
-    count = 0
+    global count
     while success:
-        cv2.imwrite(os.path.join(output_folder, f"frame{count}.jpg"), image)
+        if (count % 10 == 0):
+            cv2.imwrite(os.path.join(output_folder, f"frame{count}.jpg"), image)
         success, image = vidcap.read()
         count += 1
 
