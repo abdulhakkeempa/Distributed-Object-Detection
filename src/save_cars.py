@@ -39,9 +39,14 @@ def detect_cars(model, video):
 
       for result in results.xyxy[0]: 
         x1, y1, x2, y2 = map(int, result[:4])  
-        frame = cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 4)  
+        print(x1, y1, x2, y2)
+        # frame = cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 4) 
+        cropped_car = frame[y1:y2, x1: x2]
+        cv2.imshow("Vehicle Footage", cropped_car)
+        print("Saving car")
+        cv2.imwrite(f"./cars/car_{frame_count}.jpg", cropped_car)
 
-      cv2.imshow("Vehicle Footage", frame) 
+      # cv2.imshow("Vehicle Footage", frame) 
       cv2.waitKey(5)
 
   except Exception as e:

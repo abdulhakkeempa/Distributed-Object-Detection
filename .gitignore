@@ -4,6 +4,10 @@ __pycache__/
 *$py.class
 
 */frames
+*.jpg
+/cars
+
+yolov5
 
 # C extensions
 *.so
