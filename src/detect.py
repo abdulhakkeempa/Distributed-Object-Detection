@@ -3,14 +3,29 @@ import cv2
 import pathlib
 import matplotlib.pyplot as plt
 import sys
+from identify import ObjectSimilarity
 
 if sys.platform == "win32":
   temp = pathlib.PosixPath
   pathlib.PosixPath = pathlib.WindowsPath
   del temp
 
-model = torch.hub.load("ultralytics/yolov5", "custom","./best.pt", force_reload = True)
+model = torch.hub.load("ultralytics/yolov5", "custom","./best.pt")
 video = cv2.VideoCapture('./footage.mp4')
+
+params = {
+    "image_path" : "./cars/car_1221.jpg",
+    "good_match_ratio" : 50
+}
+
+flann_param = {
+    "trees": 5,
+    "checks": 150
+}
+
+checker = ObjectSimilarity(**params)
+checker.process_target_image()
+checker.create_flann_searcher(**flann_param)
 
 def detect_cars(model, video):
   """
@@ -39,7 +54,13 @@ def detect_cars(model, video):
 
       for result in results.xyxy[0]: 
         x1, y1, x2, y2 = map(int, result[:4])  
-        frame = cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 4)  
+        print(f"Found a car, checking similarity")
+        # frame = cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 4)  
+        car = frame[y1:y2, x1:x2]
+        checker.find_match(car)
+        checker.lowes_ratio_test()
+        print(checker.is_images_similar(ratio_test=True))
+        print(len(checker.good_matches))
 
       cv2.imshow("Vehicle Footage", frame) 
       cv2.waitKey(5)
