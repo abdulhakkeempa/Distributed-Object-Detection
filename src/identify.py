@@ -3,13 +3,11 @@ import cv2
 class ObjectSimilarity:
     def __init__(self, 
                  image_path, 
-                 good_match_ratio, 
-                 no_of_matches
+                 good_match_ratio=50, 
                  ):
         self.sift = cv2.SIFT_create()
         self.target_image = self.load_image(image_path)
         self.good_match_ratio = int(good_match_ratio)
-        self.no_of_matches = int(no_of_matches)
         self.good_matches = []
 
     def create_flann_searcher(self, algorithm=0, trees=5, checks=50):
@@ -21,14 +19,18 @@ class ObjectSimilarity:
         target_image = cv2.imread(image_path)
         return target_image
     
-    def compute_descriptor(self):
-        keypoint, descriptor = self.sift.detectAndCompute(self.target_image, None)
-        self.descriptor = descriptor
-        del keypoint, descriptor
+    def process_target_image(self):
+        keypoint, self.descriptor = self.compute_descriptor(self.target_image)
+        del keypoint
+
+    def compute_descriptor(self, image):
+        keypoint, descriptor = self.sift.detectAndCompute(image, None)
+        return keypoint, descriptor
 
     def find_match(self, compare_image, k=2):
-        kp, des = self.sift.detectAndCompute(self.load(compare_image), None)
+        kp, des = self.compute_descriptor(self.load_image(compare_image))
         self.matches = self.flann.knnMatch(self.descriptor, des, k=k)
+        del kp, des
 
     def lowes_ratio_test(self):
         self.good_matches = []
