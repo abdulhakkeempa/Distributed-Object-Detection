@@ -28,7 +28,7 @@ class ObjectSimilarity:
         return keypoint, descriptor
 
     def find_match(self, compare_image, k=2):
-        kp, des = self.compute_descriptor(self.load_image(compare_image))
+        kp, des = self.compute_descriptor(compare_image)
         self.matches = self.flann.knnMatch(self.descriptor, des, k=k)
         del kp, des
 
