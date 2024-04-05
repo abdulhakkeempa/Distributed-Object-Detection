@@ -4,6 +4,8 @@ from similarity import ObjectSimilarity
 from const import MODEL_PATH, VIDEO_PATH, IMAGE_PATH
 import sys
 import pathlib
+from iot.publish import MqttClient
+import random 
 
 if sys.platform == "win32":
   temp = pathlib.PosixPath
@@ -11,7 +13,7 @@ if sys.platform == "win32":
   del temp
 
 class CarDetection:
-    def __init__(self, model_path, video_path, image_path, good_match_ratio=50):
+    def __init__(self, model_path, video_path, image_path, good_match_ratio=50, mqtt_client):
         self.model = torch.hub.load("ultralytics/yolov5", "custom", model_path)
         self.video = cv2.VideoCapture(video_path)
         self.params = {
@@ -25,6 +27,7 @@ class CarDetection:
         self.checker = ObjectSimilarity(**self.params)
         self.checker.process_target_image()
         self.checker.create_flann_searcher(**self.flann_param)
+        self.mqtt = mqtt_client
 
     def detect_cars(self):
         """
@@ -59,6 +62,10 @@ class CarDetection:
                     print(self.checker.is_images_similar(ratio_test=True))
                     print(len(self.checker.good_matches))
 
+                    if self.checker.is_images_similar(ratio_test=True):
+                        self.mqtt.publish("Random Location")
+                        
+
         except Exception as e:
             print("Some error occurred")
             print(e)
@@ -70,4 +77,12 @@ class CarDetection:
         self.detect_cars()
         self.cleanup()
 
-app = CarDetection(MODEL_PATH, VIDEO_PATH, IMAGE_PATH, good_match_ratio=50)
+
+broker = 'broker.emqx.io'
+port = 1883
+topic = "python/dob-iot"
+client_id = f'publish-{random.randint(0, 100)}'
+
+
+mqtt = MqttClient(broker, port, topic, client_id)
+app = CarDetection(MODEL_PATH, VIDEO_PATH, IMAGE_PATH, good_match_ratio=50, mqtt_client=mqtt)

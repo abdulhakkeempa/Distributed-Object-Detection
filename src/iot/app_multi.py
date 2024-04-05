@@ -5,6 +5,8 @@ from const import MODEL_PATH, VIDEO_PATH, IMAGE_PATH
 import sys
 import pathlib
 import threading
+from publish import MqttClient
+import random
 
 if sys.platform == "win32":
   temp = pathlib.PosixPath
@@ -12,7 +14,7 @@ if sys.platform == "win32":
   del temp
 
 class CarDetection:
-    def __init__(self, model_path, video_path, image_path, good_match_ratio=50, batch_size=5):
+    def __init__(self, model_path, video_path, image_path, mqtt_client, good_match_ratio=50, batch_size=5):
         self.model = torch.hub.load("ultralytics/yolov5", "custom", model_path)
         self.video = cv2.VideoCapture(video_path)
         self.params = {
@@ -30,6 +32,8 @@ class CarDetection:
         self.batch_size = batch_size
         self.frame_buffer = []  # Buffer to hold frames for batch processing
         self.lock = threading.Lock()  # Lock for thread safety
+
+        self.mqtt = mqtt_client
 
     def process_frame_batch(self, frame_batch):
         # Process a batch of frames using the car detection model
@@ -58,6 +62,11 @@ class CarDetection:
                     self.checker.lowes_ratio_test()
                     print(f"Similarity: {self.checker.is_images_similar(ratio_test=True)}")
                     print(f"Good Matches: {len(self.checker.good_matches)}")
+
+                    if self.checker.is_images_similar(ratio_test=True):
+                        print(f"Sending Data")
+                        self.mqtt.send_data("Random Location")
+
 
     def capture_frames(self):
         frame_count = 0
@@ -134,4 +143,5 @@ class CarDetection:
         self.start_threads()
         self.cleanup()
 
-app = CarDetection(MODEL_PATH, VIDEO_PATH, IMAGE_PATH, good_match_ratio=50)
+mqtt = MqttClient('broker.emqx.io', 1883, 'python/dob-iot', f'publish-{random.randint(0, 100)}')
+app = CarDetection(MODEL_PATH, VIDEO_PATH, IMAGE_PATH, good_match_ratio=20, mqtt_client=mqtt)
