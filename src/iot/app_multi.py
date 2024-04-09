@@ -7,6 +7,7 @@ import pathlib
 import threading
 from publish import MqttClient
 import random
+import os
 
 if sys.platform == "win32":
   temp = pathlib.PosixPath
@@ -65,7 +66,7 @@ class CarDetection:
 
                     if self.checker.is_images_similar(ratio_test=True):
                         print(f"Sending Data")
-                        self.mqtt.send_data("Random Location")
+                        self.mqtt.send_data(os.getenv("DEVICE"))
 
 
     def capture_frames(self):
