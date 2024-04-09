@@ -3,6 +3,7 @@ import json
 import time
 from paho.mqtt import client as mqtt_client
 import datetime
+import os
 
 class MqttClient:
     def __init__(self, broker, port, topic, client_id):
@@ -60,6 +61,6 @@ if __name__ == '__main__':
     mqtt_client = MqttClient(broker, port, topic, client_id)
 
     while True:
-        mqtt_client.publish("Location")
+        mqtt_client.publish(os.getenv("DEVICE"))
         print(f"Published payload")
         time.sleep(5)  # Send data every 5 seconds
