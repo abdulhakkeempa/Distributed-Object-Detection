@@ -9,6 +9,9 @@ from publish import MqttClient
 import random
 import os
 
+if not os.getenv("DEVICE"):
+  raise Exception("DEVICE value not set which is essential for sending data to MQTT Client, run `export DEVICE=<with_your_device_id>`")
+
 if sys.platform == "win32":
   temp = pathlib.PosixPath
   pathlib.PosixPath = pathlib.WindowsPath
