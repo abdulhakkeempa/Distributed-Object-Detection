@@ -10,6 +10,7 @@ import random
 import os
 
 if not os.getenv("DEVICE"):
+#   os.environ["DEVICE"] = "device-1"
   raise Exception("DEVICE value not set which is essential for sending data to MQTT Client, run `export DEVICE=<with_your_device_id>`")
 
 if sys.platform == "win32":
@@ -38,6 +39,7 @@ class CarDetection:
         self.lock = threading.Lock()  # Lock for thread safety
 
         self.mqtt = mqtt_client
+        self.stop_threads = False
 
     def process_frame_batch(self, frame_batch):
         # Process a batch of frames using the car detection model
@@ -50,6 +52,8 @@ class CarDetection:
 
     def process_frames(self):
         while True:
+            if self.stop_threads:
+                break
             with self.lock:
                 if len(self.frame_buffer) >= self.batch_size:
                     frame_batch = self.frame_buffer[:self.batch_size]
@@ -76,6 +80,8 @@ class CarDetection:
         frame_count = 0
         try:
             while True:
+                if self.stop_threads:
+                    break
                 ret, frame = self.video.read()
                 if not ret:
                     break
@@ -92,9 +98,12 @@ class CarDetection:
             print("Some error occurred")
             print(e)
 
+    def stop_threads(self):
+        self.stop_threads = True
+
     def start_threads(self):
-        capture_thread = threading.Thread(target=self.capture_frames)
-        process_thread = threading.Thread(target=self.process_frames)
+        capture_thread = threading.Thread(target=self.capture_frames, daemon=True)
+        process_thread = threading.Thread(target=self.process_frames, daemon=True)
 
         capture_thread.start()
         process_thread.start()

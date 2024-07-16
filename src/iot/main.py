@@ -1,3 +1,8 @@
 if __name__ == '__main__':
     from app_multi import app
-    app.run()
+    try:
+        app.run()
+    except KeyboardInterrupt:
+        app.stop_threads()
+        app.cleanup()
+        print("Exiting")
