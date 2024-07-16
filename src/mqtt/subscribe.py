@@ -1,10 +1,11 @@
 # python 3.11
 
 import random
-
+import json
 from paho.mqtt import client as mqtt_client
+import sqlite3
 
-
+DB_FILE = "db/database.db"
 broker = 'broker.emqx.io'
 port = 1883
 topic = "python/dob-iot"
@@ -30,7 +31,36 @@ def connect_mqtt() -> mqtt_client:
 
 def subscribe(client: mqtt_client):
     def on_message(client, userdata, msg):
-        print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
+        try:
+            print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
+
+            payload = msg.payload.decode("utf-8")
+            data = json.loads(payload)
+
+            # Connect to the SQLite database
+            conn = sqlite3.connect(DB_FILE)
+            cursor = conn.cursor()
+
+            # Create the table if it doesn't exist
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS mqtt_data (
+                    timestamp DATETIME,
+                    location TEXT
+                )
+            """)
+
+            # Insert data into the table
+            cursor.execute("""
+                INSERT INTO mqtt_data (timestamp, location)
+                VALUES (?, ?)
+            """, (data["timestamp"], data["location"]))
+
+            conn.commit()
+            conn.close()
+            print(f"Data stored in SQLite: {data}")
+
+        except Exception as e:
+            print(f"Error storing data: {e}")
 
     client.subscribe(topic, 2)
     client.on_message = on_message
@@ -44,3 +74,5 @@ def run():
 
 if __name__ == '__main__':
     run()
+
+
