@@ -5,7 +5,11 @@ import plotly.express as px
 
 # add title for this image
 st.header("Distributed Car Detection System")
-st.image("./cars/car_1221.jpg", caption="Target Car", use_column_width=True) 
+st.sidebar.image("./cars/car_1221.jpg", caption="Target Car", use_column_width=True)
+
+st.sidebar.subheader("Camera Locations")
+st.sidebar.write("Location-1 - Kalamassery CUSAT Signal")
+st.sidebar.write("Location-2 - CUSAT Junction")
 
 conn = sqlite3.connect("./db/synthetic.db")
 df = pd.read_sql_query("SELECT * FROM mqtt_data", conn)
@@ -18,7 +22,7 @@ fig.update_traces(mode='markers+lines')
 fig.update_layout(yaxis_title='') 
 
 
-fig2 = px.histogram(df, x='location', title='Camera Activity')
+fig2 = px.histogram(df, x='location', title='Presence of the car per location')
 
 location_coords = {
     "Location-1": {"lat": 10.047470, "lon": 76.318569},  
