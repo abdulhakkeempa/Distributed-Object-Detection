@@ -14,7 +14,7 @@ The inference is performed on the edge device using the concept of TinyML.
 
 
 ## Architecture
-![Overall Architecture](https://github.com/abdulhakkeempa/Distributed-Object-Detection/assets/92361680/b07135d7-c70a-4924-b60d-37feb06b81f4)
+![Architecture](https://github.com/user-attachments/assets/3e7219da-c29d-49a7-b9fc-6ec46872bdfb)
 
 ## Detailed Workflow
 ![Workflow](https://github.com/abdulhakkeempa/Distributed-Object-Detection/assets/92361680/dc8809b1-0184-4d2b-8cae-3edc826f47d3)
